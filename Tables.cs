@@ -76,11 +76,11 @@ namespace WindowsFormsApp4
                         tx.Enabled = false;
                         if (titles != null && j <= titles.Length && mode == 1 && j >0) tx.Text = titles[j-1];
                  } 
-                                // return Parameters
+                 // return Parameters
                  x += tx.Width-1;
                  frm.Controls.Add(tx);
-                    Table[TableCount].TB[i, j] = new TextBox();
-                    Table[TableCount].TB[i, j].Tag = tx;
+                 Table[TableCount].TB[i, j] = new TextBox();
+                 Table[TableCount].TB[i, j].Tag = tx;
 
                 }
                     textboxcount++;
@@ -88,7 +88,12 @@ namespace WindowsFormsApp4
                     x = oldx;
                 if (titles != null)
                 {
-                    for (int f = 0; f < titles.Length ; f++)
+                    int z;
+                    if (Width < titles.Length)
+                        z = Width;
+                    else
+                        z = titles.Length;
+                    for (int f = 0; f < z ; f++)
                     {
                         Table[TableCount].DataBase[0, f] = titles[f];
                     }
@@ -144,12 +149,10 @@ namespace WindowsFormsApp4
                     if ( j > colNum)
                     { 
                         tx.Location = new System.Drawing.Point(xx, tx.Location.Y );
-                      //  if (i > 0 )
                             xx += tx.Width - 1;
                     }
                 }
             }
-
         }
         private mystract[] SwapArrays_mystract(int newMax,mystract[] old)
         {
@@ -173,14 +176,11 @@ namespace WindowsFormsApp4
                 TextBox tx = Table[tableIndex].TB[0, i].Tag as TextBox;
                 temp += tx.Width-1;
             }
-           
-           // temp--;
             return temp;
         }
         public void findCell(string input,int X=0,int Y =0, int tableIndex = 0)
         {
             int i=0, j=0;
-            bool found = false;
             for ( i = 0; i <= Table[tableIndex].height ; i++)
             {
                 for (j = 0; j < Table[tableIndex].width ; j++)
@@ -194,13 +194,10 @@ namespace WindowsFormsApp4
                     }
                 }
             }
-
-            
         }
         public void findAndreplace(string input,string input2,int tableIndex =0)
         {
             int i = 0, j = 0;
-            bool found = false;
             for (i = 0; i <= Table[tableIndex].height; i++)
             {
                 for (j = 0; j < Table[tableIndex].width; j++)
@@ -234,6 +231,73 @@ namespace WindowsFormsApp4
             else
                 x = TableCount;
             Table[x].DataBase[int.Parse(tx.Name), tx.TabIndex] = tx.Text;
+        }
+        public void saveToFile(string filename,int tableIndex =0)
+        {
+            System.IO.FileStream fs = System.IO.File.Open(filename, System.IO.FileMode.OpenOrCreate);
+            string x = Table[tableIndex].height + ":" + Table[tableIndex].width + "/" ;
+            for (int i = 0; i <= Table[tableIndex].height ; i++)
+            {
+                for (int j = 0; j <= Table[tableIndex].width ; j++)
+                {
+                    if (i >=0  && j >= 1)
+                    {
+                        string u = Table[tableIndex].DataBase[i, j];
+                        if (u == null) u = "";
+                            x += u.Length + ":" + u;
+                    }
+                }
+            }
+            Byte[] info = new UTF8Encoding(true).GetBytes(x);
+            fs.Write(info, 0, info.Length);
+            fs.Close();
+        }
+        public void openFormFile(string filename,Form1 frm)
+        {
+            System.IO.FileStream fs = System.IO.File.Open(filename, System.IO.FileMode.OpenOrCreate);
+            byte[] b = new byte[1024];
+            UTF8Encoding temp = new UTF8Encoding(true);
+            string x;
+            fs.Read(b, 0, b.Length);
+            fs.Close();
+            x = temp.GetString(b);
+            string u = x.Substring(0, x.IndexOf('/'));
+            int offset = x.IndexOf('/')+1;
+            string da = x.Substring(offset ,x.Length-(offset));
+            int f1 = u.IndexOf(':');
+            int f2 = u.Length;
+            int h = int.Parse( u.Substring(0, f1));
+            int w = int.Parse(u.Substring(f1+1 , f2-(f1+1)));
+            CreateTable(h, w, frm, 1,null,1,25);
+            int pointer =0 ;
+            int oldpointer=0;
+            for (int i =0; i <= h; i++)
+            {
+                for (int j = 1; j <= w; j++)
+                {
+                    pointer = da.IndexOf(':', oldpointer+1);
+                    if (pointer < 0) break;
+                    if (oldpointer == 0) oldpointer = -1;
+                    int co = int.Parse(da.Substring(oldpointer + 1, pointer - (oldpointer + 1)));
+                    string dat = da.Substring(pointer + 1, co);
+                    if (i == 0)
+                        addData(dat, i, j, false );
+                    else
+                        addData(dat, i, j);
+                    pointer += co;
+                    oldpointer = pointer;
+                }
+            }
+
+            
+
+        }
+        private void addData(string input,int x,int y,bool enabl = true ,int tableIndex =0)
+        {
+            Table[tableIndex].DataBase[x, y] = input;
+            TextBox tx = Table[tableIndex].TB[x, y].Tag as TextBox;
+            tx.Text = input;
+            tx.Enabled = enabl;
         }
     }
 }

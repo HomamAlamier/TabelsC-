@@ -9,11 +9,16 @@ namespace WindowsFormsApp4
 { 
     class Tables
     {
+        public struct pos
+        {
+            public int cellX;
+            public int cellY;
+        }
         public struct mystract
         {
            public TextBox[,] TB;
            public string[,] DataBase;
-            public int[] TBPos;
+            public pos[] TBPos;
             public int height;
             public int width;
             public System.Drawing.Point point;
@@ -34,8 +39,8 @@ namespace WindowsFormsApp4
                
             }
             Table[TableCount].TB = new TextBox[Height+1, Width+1];
-            Table[TableCount].DataBase = new string[Height + 1, Width ];
-            Table[TableCount].TBPos = new int[Height + 1];
+            Table[TableCount].DataBase = new string[Height + 1, Width +1];
+            Table[TableCount].TBPos = new pos[Height + 1+Width ];
             Table[TableCount].height = Height;
             Table[TableCount].width = Width;
             Table[TableCount].point = new System.Drawing.Point(x, y);
@@ -53,9 +58,8 @@ namespace WindowsFormsApp4
                     tx.Location = new System.Drawing.Point(x, y);
                     tx.Height = 20;
                     tx.BorderStyle = BorderStyle.FixedSingle;
-                    tx.Name = i.ToString();
-                    tx.TabIndex = TableCount;
-                    Table[TableCount].TBPos[i] = j;
+                    tx.Name = Convert.ToString(i);
+                    tx.TabIndex = j;
                     tx.TextChanged += new EventHandler(TB_TextChanged);
                     // Spesific Parameters
                     if (j > 0)
@@ -173,6 +177,42 @@ namespace WindowsFormsApp4
            // temp--;
             return temp;
         }
+        public void findCell(string input,int X=0,int Y =0, int tableIndex = 0)
+        {
+            int i=0, j=0;
+            bool found = false;
+            for ( i = 0; i <= Table[tableIndex].height ; i++)
+            {
+                for (j = 0; j < Table[tableIndex].width ; j++)
+                {
+                    if (Table[tableIndex].DataBase[i, j] != null && Table[tableIndex].DataBase[i,j].IndexOf(input) >=0 )
+                    {
+                        TextBox tx = Table[tableIndex].TB[i, j].Tag as TextBox;
+                        X = i;
+                        Y = j;
+                        tx.BackColor = System.Drawing.Color.LightCyan;
+                    }
+                }
+            }
+
+            
+        }
+        public void findAndreplace(string input,string input2,int tableIndex =0)
+        {
+            int i = 0, j = 0;
+            bool found = false;
+            for (i = 0; i <= Table[tableIndex].height; i++)
+            {
+                for (j = 0; j < Table[tableIndex].width; j++)
+                {
+                    if (Table[tableIndex].DataBase[i, j] != null && Table[tableIndex].DataBase[i, j].IndexOf(input) >= 0)
+                    {
+                        TextBox tx = Table[tableIndex].TB[i, j].Tag as TextBox;
+                        tx.Text = input2;
+                    }
+                }
+            }
+        }
         public int GetHeight(int tableIndex = 0)
         {
             return (19 * Table[tableIndex].height) + 19;
@@ -188,7 +228,12 @@ namespace WindowsFormsApp4
         private void TB_TextChanged(object sender, EventArgs e)
         {
             TextBox tx = (TextBox)sender;
-            Table[tx.TabIndex].DataBase[int.Parse(tx.Name), Table[tx.TabIndex].TBPos[int.Parse(tx.Name)]] = tx.Text;
+            int x;
+            if (TableCount > 0)
+                x = TableCount - 1;
+            else
+                x = TableCount;
+            Table[x].DataBase[int.Parse(tx.Name), tx.TabIndex] = tx.Text;
         }
     }
 }
